@@ -151,7 +151,7 @@ export const dummyPublishedCreationData = [
     id: 1,
     user_id: "user_2yMX02PRbyMtQK6PebpjnxvRNIA",
     prompt:
-      "Generate an image of A Boy is on Boat , and fishing in the style Anime style.",
+      "Generate an image of A Boy is on Bo  at , and fishing in the style Anime style.",
     content: ai_gen_img_1,
     type: "image",
     publish: true,
