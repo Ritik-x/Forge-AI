@@ -1,5 +1,5 @@
 // App.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./pages/Layout.jsx";
 import Dashboard from "./pages/Dashboard";
@@ -11,8 +11,17 @@ import RemoveBackground from "./pages/RemoveBackground.jsx";
 import RemoveObjects from "./pages/RemoveObjects.jsx";
 import ReviewResume from "./pages/ReviewResume.jsx";
 import Community from "./pages/Community.jsx";
+import { useAuth } from "@clerk/clerk-react";
 
 const App = () => {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    getToken().then((token) => {
+      console.log("Clerk Token:", token);
+    });
+  }, []); // ✅ empty array, run only once after mount
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0d0d0d] via-[#121212] to-[#1f1f1f] text-white">
       <Routes>
