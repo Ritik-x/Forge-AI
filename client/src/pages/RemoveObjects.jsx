@@ -1,10 +1,16 @@
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
 import { Scissors, Sparkles } from "lucide-react";
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const RemoveObjects = () => {
   const [input, setInput] = useState(null); // image file
   const [object, setObject] = useState(""); // object name
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
 
+  const { getToken } = useAuth();
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
@@ -18,6 +24,35 @@ const RemoveObjects = () => {
     console.log("Removing object:", object);
 
     // Add your image upload & object removal logic here
+
+    try {
+      setLoading(true);
+
+      // Only allow one word (no spaces) for object name
+      if (object.trim().split(/\s+/).length > 1) {
+        setLoading(false);
+        return toast("Please enter only one object name (no spaces).");
+      }
+
+      const formData = new FormData();
+      formData.append("image", input);
+      formData.append("object", object);
+
+      const { data } = await axios.post(
+        "/api/ai/remove-image-object",
+        formData,
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
+
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+    setLoading(false);
   };
 
   return (
@@ -58,10 +93,17 @@ const RemoveObjects = () => {
         />
 
         <button
+          disabled={loading}
           type="submit"
           className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-md transition duration-200"
         >
-          <Scissors className="w-4 h-4" />
+          {loading ? (
+            <span className="w-4 h-4 my-1 rounded-full border-2 border-t-transparent animate-spin">
+              {" "}
+            </span>
+          ) : (
+            <Scissors className="w-4 h-4" />
+          )}
           Remove Object
         </button>
       </form>
@@ -72,13 +114,16 @@ const RemoveObjects = () => {
           <Scissors className="w-5 h-5 text-gray-300" />
           <h1 className="text-xl font-semibold text-white">Image Processed</h1>
         </div>
-
-        <div className="flex-1 flex justify-center items-center min-h-[200px]">
-          <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
-            <Scissors className="w-8 h-8" />
-            <p>Upload an image and describe the object you want to remove.</p>
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center min-h-[200px]">
+            <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
+              <Scissors className="w-8 h-8" />
+              <p>Upload an image and describe the object you want to remove.</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <img src={content} alt="image " className="mt-4 w-full h-full" />
+        )}
       </div>
     </div>
   );

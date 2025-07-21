@@ -1,6 +1,9 @@
 import { Image, Sparkles, Edit } from "lucide-react";
 import React, { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
+import { useAuth } from "@clerk/clerk-react";
 const Genrateimages = () => {
   const imageStyle = [
     "Realistic Style",
@@ -16,11 +19,36 @@ const Genrateimages = () => {
   const [selectedstyle, setSelectedstyle] = useState("Realistic Style");
   const [input, setInput] = useState("");
   const [publish, setPublish] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+
+  const { getToken } = useAuth();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     console.log({ input, selectedstyle });
     setPublish(true);
+
+    try {
+      setLoading(true);
+
+      const prompt = `Generate an image of ${input} in the style ${selectedstyle}`;
+
+      const { data } = await axios.post(
+        "/api/ai/generate-image",
+        { prompt },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
+
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+    setLoading(false);
   };
 
   return (
@@ -81,10 +109,15 @@ const Genrateimages = () => {
         </div>
 
         <button
+          disabled={loading}
           type="submit"
           className="flex items-center justify-center gap-2 px-5 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-md transition duration-200 shadow-sm"
         >
-          <Image className="w-4 h-4" />
+          {loading ? (
+            <span className="w-4 h-4 my-1 rounded-full border-2 border-t-transparent animate-spin"></span>
+          ) : (
+            <Image className="w-4 h-4" />
+          )}
           Generate Image
         </button>
       </form>
@@ -95,23 +128,29 @@ const Genrateimages = () => {
           <Image className="w-5 h-5 text-gray-300" />
           <h1 className="text-xl font-semibold text-white">Your Image</h1>
         </div>
-
-        <div className="flex-1 flex justify-center items-center min-h-[200px]">
-          {!publish ? (
+        {content ? (
+          <div className="flex flex-col items-center justify-center min-h-[200px] gap-4">
+            <img
+              src={content}
+              alt="Generated AI"
+              className="rounded-xl shadow-lg max-w-full max-h-[350px] border border-gray-700 bg-black/30"
+              style={{ objectFit: "contain" }}
+            />
+            <p className="mt-2 text-green-400 text-sm font-medium flex items-center gap-2">
+              <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              Image Generated Successfully
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1 flex justify-center items-center min-h-[200px]">
             <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center hover:text-white transition">
               <Image className="w-10 h-10 opacity-70" />
               <p className="text-sm">
                 Choose a style and description to generate
               </p>
             </div>
-          ) : (
-            <div className="text-center">
-              <p className="mt-2 text-green-400 text-sm">
-                ✅ Image Generated Successfully
-              </p>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,8 +1,15 @@
 import { File, Sparkles } from "lucide-react";
 import React, { useState } from "react";
-
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
 const ReviewResume = () => {
   const [input, setInput] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("");
+
+  const { getToken } = useAuth();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -14,6 +21,26 @@ const ReviewResume = () => {
 
     // You can now use the `input` state, which holds the uploaded file
     console.log("Uploaded file:", input);
+
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+
+      formData.append("resume", input);
+
+      const { data } = await axios.post("/api/ai/resume-review", formData, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
+      });
+
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -47,7 +74,13 @@ const ReviewResume = () => {
           type="submit"
           className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-md transition duration-200"
         >
-          <File className="w-4 h-4" />
+          {loading ? (
+            <span className="w-4 h-4 my-4 border-2 animate-spin border-t-neutral-400">
+              {" "}
+            </span>
+          ) : (
+            <File className="w-4 h-4" />
+          )}
           Review Resume
         </button>
       </form>
@@ -58,13 +91,20 @@ const ReviewResume = () => {
           <File className="w-5 h-5 text-gray-300" />
           <h1 className="text-xl font-semibold text-white">Resume-Analyzed</h1>
         </div>
-
-        <div className="flex-1 flex justify-center items-center min-h-[200px]">
-          <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
-            <File className="w-8 h-8" />
-            <p> Resume Analyzed</p>
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center min-h-[200px]">
+            <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
+              <File className="w-8 h-8" />
+              <p>Upload a resume to analyze</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-4 h-full overflow-y-scroll text-sm text-slate-400">
+            {/* If you use a Markdown component, make sure it's imported */}
+            {/* <Markdown>{content}</Markdown> */}
+            {content}
+          </div>
+        )}
       </div>
     </div>
   );

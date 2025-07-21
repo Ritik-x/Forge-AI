@@ -1,5 +1,5 @@
 // App.jsx
-import React, { useEffect } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Layout from "./pages/Layout.jsx";
 import Dashboard from "./pages/Dashboard";
@@ -11,19 +11,22 @@ import RemoveBackground from "./pages/RemoveBackground.jsx";
 import RemoveObjects from "./pages/RemoveObjects.jsx";
 import ReviewResume from "./pages/ReviewResume.jsx";
 import Community from "./pages/Community.jsx";
-import { useAuth } from "@clerk/clerk-react";
-
+// import { useAuth } from "@clerk/clerk-react";
+import { Toaster } from "react-hot-toast";
 const App = () => {
-  const { getToken } = useAuth();
-
-  useEffect(() => {
-    getToken().then((token) => {
-      console.log("Clerk Token:", token);
-    });
-  }, []); // ✅ empty array, run only once after mount
+  // const { user, getToken } = useAuth();
+  //
+  // useEffect(() => {
+  // if (user) {
+  // getToken().then((token) => {
+  // console.log("Clerk Token:", token);
+  // });
+  // }
+  // }, [user]); // Only run when user changes
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0d0d0d] via-[#121212] to-[#1f1f1f] text-white">
+      <Toaster />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/ai" element={<Layout />}>

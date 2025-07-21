@@ -1,6 +1,10 @@
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
 import { Sparkles, Edit, HashIcon, Hash } from "lucide-react";
 import React, { useState } from "react";
-
+import toast from "react-hot-toast";
+import Markdown from "react-markdown";
+// Removed duplicate axios import
 const BlogTitle = () => {
   const blogCategories = [
     "General",
@@ -17,9 +21,35 @@ const BlogTitle = () => {
   const [selectedCategory, setSelectedCategory] = useState("General");
   const [input, setInput] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState(""); // Set initial state to empty string
+
+  const { getToken } = useAuth();
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     // handle form submission here
+
+    try {
+      setLoading(true);
+
+      const prompt = `Generate a blog title for the ${input} in category ${selectedCategory}`;
+
+      const { data } = await axios.post(
+        "/api/ai/generate-blog-title",
+        { prompt },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
+
+      if (data.success) {
+        setContent(data.content); // <-- Set content state
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+    setLoading(false);
     console.log({ input, selectedCategory });
   };
 
@@ -67,10 +97,15 @@ const BlogTitle = () => {
         </div>
 
         <button
+          disabled={loading}
           type="submit"
           className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-md transition duration-200"
         >
-          <Edit className="w-4 h-4" />
+          {loading ? (
+            <span className="w-4 h-4 my-1 rounded-full border-2 border-t-transparent animate-spin"></span>
+          ) : (
+            <Edit className="w-4 h-4" />
+          )}
           Get Titles
         </button>
       </form>
@@ -81,13 +116,20 @@ const BlogTitle = () => {
           <HashIcon className="w-5 h-5 text-gray-300" />
           <h1 className="text-xl font-semibold text-white">Your Titles</h1>
         </div>
-
-        <div className="flex-1 flex justify-center items-center min-h-[200px]">
-          <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
-            <Hash className="w-8 h-8" />
-            <p>Choose a category & enter keywords to generate blog titles</p>
+        {content.trim() ? (
+          <div className="mt-3 h-full overflow-y-scroll text-sm text-slate-400">
+            <div className=".reset-tw">
+              <Markdown>{(content || "").toString()}</Markdown>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex-1 flex justify-center items-center min-h-[200px]">
+            <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
+              <Hash className="w-8 h-8" />
+              <p>Choose a category & enter keywords to generate blog titles</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

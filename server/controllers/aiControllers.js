@@ -173,7 +173,6 @@ export const generateImage = async (req, res) => {
 export const removeImageBackground = async (req, res) => {
   try {
     const { userId } = req.auth();
-    const { image } = req.file;
     const plan = req.plan;
 
     if (plan !== "premium") {
@@ -183,11 +182,16 @@ export const removeImageBackground = async (req, res) => {
       });
     }
 
-    // ✅ FIXED: Corrected the variable name from `form` to `formData`
-    // const formData = new FormData();
-    // formData.append("prompt", image);
+    // Check if file exists
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file uploaded.",
+      });
+    }
 
-    const { secure_url } = await cloudinary.uploader.upload(image.path, {
+    // Upload to Cloudinary with background removal
+    const { secure_url } = await cloudinary.uploader.upload(req.file.path, {
       transformation: [
         {
           effect: "background_removal",
@@ -197,28 +201,28 @@ export const removeImageBackground = async (req, res) => {
     });
 
     await sql`
-    INSERT INTO creations (user_id, prompt, content, type)
-    VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image')
-  `;
+      INSERT INTO creations (user_id, prompt, content, type)
+      VALUES (${userId}, 'Remove background from image', ${secure_url}, 'image')
+    `;
 
     res.json({
       success: true,
       content: secure_url,
-      message: "background removed successfully.",
+      message: "Background removed successfully.",
     });
   } catch (error) {
-    console.error("Error generating image:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error removing background:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
   }
 };
 
 export const removeImageObject = async (req, res) => {
   try {
     const { userId } = req.auth();
-
-    const { object } = req.body();
-
-    const { image } = req.file;
+    const { object } = req.body;
     const plan = req.plan;
 
     if (plan !== "premium") {
@@ -228,28 +232,37 @@ export const removeImageObject = async (req, res) => {
       });
     }
 
-    // ✅ FIXED: Corrected the variable name from `form` to `formData`
-    // const formData = new FormData();
-    // formData.append("prompt", image);
+    // Check if file exists
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({
+        success: false,
+        message: "No image file uploaded.",
+      });
+    }
 
-    const { public_id } = await cloudinary.uploader.upload(image.path);
+    // Upload to Cloudinary
+    const { public_id } = await cloudinary.uploader.upload(req.file.path);
     const imageUrl = cloudinary.url(public_id, {
       transformation: [{ effect: `gen_remove:${object}` }],
       resource_type: "image",
     });
+
     await sql`
-  INSERT INTO creations (user_id, prompt, content, type)
-  VALUES (${userId}, ${`Removed ${object} from image`}, ${imageUrl}, 'image')
-`;
+      INSERT INTO creations (user_id, prompt, content, type)
+      VALUES (${userId}, ${`Removed ${object} from image`}, ${imageUrl}, 'image')
+    `;
 
     res.json({
       success: true,
       content: imageUrl,
-      message: "background removed successfully.",
+      message: "Object removed successfully.",
     });
   } catch (error) {
-    console.error("Error generating image:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    console.error("Error removing object:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Internal Server Error",
+    });
   }
 };
 

@@ -1,6 +1,11 @@
 import { Edit, Sparkles } from "lucide-react";
 import React, { useState } from "react";
+import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
+import toast from "react-hot-toast";
+import Markdown from "react-markdown";
 
+// axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 const Writearticle = () => {
   const articleLength = [
     { length: 800, text: "Short (500 - 800 words)" },
@@ -11,9 +16,44 @@ const Writearticle = () => {
   const [selectedLength, setSelectedLength] = useState(articleLength[0]);
   const [input, setInput] = useState("");
 
+  const [loading, setLoading] = useState(false);
+  const [content, setContent] = useState("  ");
+
+  const { getToken } = useAuth();
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    // handle form submission here
+    console.log("Form submitted");
+
+    try {
+      setLoading(true);
+      const prompt = `write an article about ${input} in ${selectedLength.text}`;
+      console.log("Prompt:", prompt);
+
+      const token = await getToken();
+      console.log("Token:", token);
+
+      const { data } = await axios.post(
+        "/api/ai/generate-article",
+        { prompt, length: selectedLength.length },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("API response:", data);
+
+      if (data.success) {
+        setContent(data.content);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log("ERROR OBJECT:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Something went wrong!";
+      toast.error(msg);
+    }
+    setLoading(false);
   };
 
   return (
@@ -60,10 +100,15 @@ const Writearticle = () => {
         </div>
 
         <button
+          disabled={loading}
           type="submit"
           className="flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-md transition duration-200"
         >
-          <Edit className="w-4 h-4" />
+          {loading ? (
+            <span className="my-1 w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"></span>
+          ) : (
+            <Edit className="w-4 h-4" />
+          )}
           Get Article
         </button>
       </form>
@@ -75,12 +120,22 @@ const Writearticle = () => {
           <h1 className="text-xl font-semibold text-white">Your Article</h1>
         </div>
 
-        <div className="flex-1 flex justify-center items-center min-h-[200px]">
-          <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
-            <Edit className="w-8 h-8" />
-            <p>Enter a topic to generate your article</p>
+        {!content ? (
+          <div className="flex-1 flex justify-center items-center min-h-[200px]">
+            <div className="text-sm flex flex-col items-center gap-4 text-gray-400 text-center">
+              <Edit className="w-8 h-8" />
+              <p>Enter a topic to generate your article</p>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-3  h-full overflow-y-scroll text-sm text-slate-400">
+            <div className=".reset-tw">
+              <Markdown>{(content || "").toString()}</Markdown>
+            </div>
+
+            {/* <div>{content}</div> */}
+          </div>
+        )}
       </div>
     </div>
   );

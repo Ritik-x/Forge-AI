@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { assets } from "../assets/assets";
+// import { assets } from "../assets/assets";
 import { Menu, X } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import { SignIn, useUser } from "@clerk/clerk-react";
@@ -14,12 +14,12 @@ const Layout = () => {
     <div className="flex flex-col h-screen">
       {/* Navbar */}
       <nav className="w-full px-8 h-14 flex items-center justify-between border-b border-gray-200">
-        <img
-          src={assets.logo}
-          alt="Logo"
-          className="h-10 cursor-pointer"
+        <span
+          className="text-3xl font-extrabold tracking-tight h-8 sm:h-10 cursor-pointer text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 hover:scale-105 transition-transform duration-200 drop-shadow-lg"
           onClick={() => navigate("/")}
-        />
+        >
+          Forge AI
+        </span>
         {sidebar ? (
           <X
             onClick={() => setSidebar(false)}
