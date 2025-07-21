@@ -11,6 +11,8 @@ const ReviewResume = () => {
 
   const { getToken } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
@@ -29,9 +31,11 @@ const ReviewResume = () => {
 
       formData.append("resume", input);
 
-      const { data } = await axios.post("/api/ai/resume-review", formData, {
-        headers: { Authorization: `Bearer ${await getToken()}` },
-      });
+      const { data } = await axios.post(
+        `${API_BASE_URL}/api/ai/resume-review`,
+        formData,
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
 
       if (data.success) {
         setContent(data.content);

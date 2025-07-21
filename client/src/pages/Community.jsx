@@ -7,11 +7,16 @@ const Community = () => {
   const [creations, setCreations] = useState([]);
   const { user } = useUser();
   const { getToken } = useAuth();
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const fetchCreations = async () => {
     try {
-      const { data } = await axios.get("/api/user/get-user-creations", {
-        headers: { Authorization: `Bearer ${await getToken()}` },
-      });
+      const { data } = await axios.get(
+        `${API_BASE_URL}/api/user/get-user-creations`,
+        {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        }
+      );
 
       if (data.success) {
         setCreations(Array.isArray(data.creations) ? data.creations : []);
@@ -28,7 +33,7 @@ const Community = () => {
   const imageliketoggle = async (id) => {
     try {
       const { data } = await axios.post(
-        "/api/user/toggle-like-creations",
+        `${API_BASE_URL}/api/user/toggle-like-creations`,
         { id },
         {
           headers: { Authorization: `Bearer ${await getToken()}` },

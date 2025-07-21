@@ -26,6 +26,8 @@ const BlogTitle = () => {
 
   const { getToken } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     // handle form submission here
@@ -36,7 +38,7 @@ const BlogTitle = () => {
       const prompt = `Generate a blog title for the ${input} in category ${selectedCategory}`;
 
       const { data } = await axios.post(
-        "/api/ai/generate-blog-title",
+        `${API_BASE_URL}/api/ai/generate-blog-title`,
         { prompt },
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );

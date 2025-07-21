@@ -24,6 +24,8 @@ const Genrateimages = () => {
 
   const { getToken } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     console.log({ input, selectedstyle });
@@ -35,7 +37,7 @@ const Genrateimages = () => {
       const prompt = `Generate an image of ${input} in the style ${selectedstyle}`;
 
       const { data } = await axios.post(
-        "/api/ai/generate-image",
+        `${API_BASE_URL}/api/ai/generate-image`,
         { prompt },
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );

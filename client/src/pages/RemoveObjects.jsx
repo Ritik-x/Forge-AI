@@ -4,6 +4,8 @@ import { Scissors, Sparkles } from "lucide-react";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const RemoveObjects = () => {
   const [input, setInput] = useState(null); // image file
   const [object, setObject] = useState(""); // object name
@@ -39,7 +41,7 @@ const RemoveObjects = () => {
       formData.append("object", object);
 
       const { data } = await axios.post(
-        "/api/ai/remove-image-object",
+        `${API_BASE_URL}/api/ai/remove-image-object`,
         formData,
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );

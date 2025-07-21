@@ -5,7 +5,8 @@ import { useAuth } from "@clerk/clerk-react";
 import toast from "react-hot-toast";
 import Markdown from "react-markdown";
 
-// axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 const Writearticle = () => {
   const articleLength = [
     { length: 800, text: "Short (500 - 800 words)" },
@@ -24,20 +25,22 @@ const Writearticle = () => {
     e.preventDefault();
     console.log("Form submitted");
 
+    if (!input) {
+      alert("Please upload a file before submitting.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const prompt = `write an article about ${input} in ${selectedLength.text}`;
-      console.log("Prompt:", prompt);
 
-      const token = await getToken();
-      console.log("Token:", token);
+      const formData = new FormData();
+      formData.append("resume", input);
 
       const { data } = await axios.post(
-        "/api/ai/generate-article",
-        { prompt, length: selectedLength.length },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${API_BASE_URL}/api/ai/resume-review`,
+        formData,
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
-      console.log("API response:", data);
 
       if (data.success) {
         setContent(data.content);
@@ -45,13 +48,7 @@ const Writearticle = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log("ERROR OBJECT:", error);
-      const msg =
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        "Something went wrong!";
-      toast.error(msg);
+      toast.error(error.message);
     }
     setLoading(false);
   };

@@ -12,6 +12,8 @@ const RemoveBackground = () => {
 
   const { getToken } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
@@ -26,7 +28,7 @@ const RemoveBackground = () => {
       formData.append("image", input); // Fixed: removed space in key
 
       const { data } = await axios.post(
-        "/api/ai/remove-image-background",
+        `${API_BASE_URL}/api/ai/remove-image-background`,
         formData,
         { headers: { Authorization: `Bearer ${await getToken()}` } }
       );

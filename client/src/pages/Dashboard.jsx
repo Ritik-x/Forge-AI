@@ -12,11 +12,16 @@ const Dashboard = () => {
 
   const { getToken } = useAuth();
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
   const getDashboardData = async () => {
     try {
-      const { data } = await axios.get("api/user/get-user-creations", {
-        headers: { Authorization: `Bearer ${await getToken()}` },
-      });
+      const { data } = await axios.get(
+        `${API_BASE_URL}/api/user/get-user-creations`,
+        {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        }
+      );
 
       if (data.success) {
         setCreations(Array.isArray(data.creations) ? data.creations : []);
