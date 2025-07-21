@@ -13,6 +13,7 @@ import ReviewResume from "./pages/ReviewResume.jsx";
 import Community from "./pages/Community.jsx";
 // import { useAuth } from "@clerk/clerk-react";
 import { Toaster } from "react-hot-toast";
+import FOF from "./pages/FOF.jsx";
 const App = () => {
   // const { user, getToken } = useAuth();
   //
@@ -28,6 +29,7 @@ const App = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0d0d0d] via-[#121212] to-[#1f1f1f] text-white">
       <Toaster />
       <Routes>
+        <Route path="/*" element={<FOF />} />
         <Route path="/" element={<Home />} />
         <Route path="/ai" element={<Layout />}>
           <Route index element={<Dashboard />} />

@@ -24,7 +24,10 @@ const Hero = () => {
         >
           Start Your Creatings
         </button>
-        <button className="px-6 py-3 border border-gray-500 hover:border-white text-gray-300 hover:text-white rounded-lg transition-all duration-200">
+        <button
+          onClick={() => navigate("/*")}
+          className="px-6 py-3 border border-gray-500 hover:border-white text-gray-300 hover:text-white rounded-lg transition-all duration-200"
+        >
           Watch Demo
         </button>
       </div>
