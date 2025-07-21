@@ -35,7 +35,7 @@ const Writearticle = () => {
 
       const formData = new FormData();
       formData.append("resume", input);
-
+      console.log("API_BASE_URL:", API_BASE_URL);
       const { data } = await axios.post(
         `${API_BASE_URL}/api/ai/resume-review`,
         formData,
