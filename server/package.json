@@ -30,6 +30,6 @@
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
-    "patch-package": "^8.0.0"
+    "patch-package": "^6.4.7"
   }
 }
